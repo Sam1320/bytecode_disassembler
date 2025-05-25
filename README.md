@@ -26,7 +26,7 @@ The web interface provides an interactive way to explore Python bytecode directl
 ## Usage
 
 ### Web Interface
-Simply open `index.html` in your browser or visit the [live demo](https://yourusername.github.io/bytecode_disassembler).
+Simply open `index.html` in your browser or visit the [live demo](https://sam1320.github.io/bytecode_disassembler).
 
 ### Command Line Tool
 
