@@ -223,6 +223,7 @@
             <p>Enter Python code and see its bytecode representation</p>
         </div>
         
+        <input type="file" id="file-input" accept=".py" style="display: none;">
         <div class="main-content">
             <div class="input-section">
                 <h3 class="section-title">Python Code</h3>
@@ -237,6 +238,7 @@ hello()"></textarea>
                 <div class="button-group">
                     <button id="disassemble-btn" class="btn-primary">Disassemble</button>
                     <button id="clear-btn" class="btn-secondary">Clear</button>
+                    <button id="upload-btn" class="btn-secondary">Upload .py File</button>
                 </div>
 
                 <div id="status" class="status" style="display: none;"></div>
@@ -323,7 +325,8 @@ hello()"></textarea>
         }
 
         function loadExample(element) {
-            document.getElementById('code-input').value = element.textContent;
+            const rawText = element.textContent;
+            document.getElementById('code-input').value = rawText.replace(/\\n/g, '\n');
             hideStatus();
         }
 
@@ -345,6 +348,54 @@ hello()"></textarea>
         // Event listeners
         document.getElementById('disassemble-btn').addEventListener('click', disassembleCode);
         document.getElementById('clear-btn').addEventListener('click', clearCode);
+        document.getElementById('upload-btn').addEventListener('click', () => {
+            document.getElementById('file-input').click(); // Trigger hidden file input
+        });
+
+        /**
+         * Handles the file upload process.
+         * Reads the selected .py file, populates the code input area,
+         * and triggers disassembly.
+         * @param {Event} event - The file input change event.
+         */
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            const fileInputElement = event.target; // Keep a reference for clearing
+
+            if (!file) {
+                // This case should ideally not happen if the event is triggered by a file selection,
+                // but it's good practice to check.
+                // showStatus('No file selected.', 'error'); // Optional: if you want to show status for this
+                return;
+            }
+
+            // Validate file type (secondary check to the 'accept' attribute)
+            if (file.type && file.type !== "text/x-python" && file.type !== "text/plain" && !file.name.endsWith(".py")) {
+                showStatus('Please select a Python (.py) file.', 'error');
+                fileInputElement.value = null; // Clear the invalid file selection
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                document.getElementById('code-input').value = e.target.result;
+                disassembleCode(); // Trigger disassembly with the new code
+                showStatus('File loaded and disassembled successfully!', 'success');
+            };
+
+            reader.onerror = function() {
+                // FileReader.error contains a DOMException or DOMError.
+                // e.target.error.name or e.target.error.message can be more specific.
+                showStatus('Failed to read the file. Error: ' + reader.error.name, 'error');
+            };
+
+            reader.readAsText(file);
+            fileInputElement.value = null; // Clear the file input's value to allow re-uploading the same file
+        }
+
+        // Add event listener for file input
+        document.getElementById('file-input').addEventListener('change', handleFileUpload);
         
         // Allow Ctrl+Enter to disassemble
         document.getElementById('code-input').addEventListener('keydown', function(e) {
