@@ -273,28 +273,9 @@ hello()"></textarea>
                 pyodide = await loadPyodide();
                 
                 // Load the disassembly function
-                pyodide.runPython(`
-import dis
-import io
-from contextlib import redirect_stdout
-
-def disassemble_code(code_str):
-    """
-    Compile and disassemble a Python code string.
-    """
-    try:
-        # Compile the code string
-        compiled_code = compile(code_str, '<string>', 'exec')
-        
-        # Capture the output of dis.dis() in a string
-        buffer = io.StringIO()
-        with redirect_stdout(buffer):
-            dis.dis(compiled_code)
-        
-        return buffer.getvalue()
-    except Exception as e:
-        return f"Error: {str(e)}"
-                `);
+                const response = await fetch('disassembler.py');
+                const disassemblerCode = await response.text();
+                await pyodide.runPythonAsync(disassemblerCode);
                 
                 pythonReady = true;
                 showStatus('Python environment loaded successfully!', 'success');
